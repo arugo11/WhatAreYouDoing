@@ -1,0 +1,43 @@
+/*
+ * Configuration file for ESP32-CAM firmware
+ * Copy this file to config.h and modify the values accordingly
+ */
+
+#ifndef CONFIG_H
+#define CONFIG_H
+
+// Wi-Fi Settings
+#define WIFI_SSID "your_wifi_ssid"
+#define WIFI_PASSWORD "your_wifi_password"
+
+// Server Settings
+#define SERVER_URL "http://192.168.1.100:8000/api/events"
+#define SERVER_TIMEOUT 10000  // milliseconds
+
+// GPIO Pin Definitions
+#define PIR_SENSOR_PIN 13     // PIRセンサーのピン
+#define FLASH_LED_PIN 4       // フラッシュLEDのピン（必要に応じて）
+
+// I2C Settings (Grove port)
+#define I2C_SDA_PIN 21        // SDAピン
+#define I2C_SCL_PIN 22        // SCLピン
+
+// Sensor I2C Addresses
+#define SHT40_I2C_ADDRESS 0x44    // SHT40の I2Cアドレス
+#define BH1750_I2C_ADDRESS 0x23   // BH1750の I2Cアドレス
+
+// Camera Settings
+#define CAMERA_MODEL_M5STACK_UNIT_CAM  // M5Stack Unit CAM
+#define CAMERA_FRAME_SIZE FRAMESIZE_VGA  // VGA (640x480)
+#define CAMERA_JPEG_QUALITY 12           // JPEG品質 (0-63, 低いほど高品質)
+
+// Timing Settings
+#define DETECTION_COOLDOWN 5000   // PIR検知後のクールダウン時間（ms）
+#define RETRY_ATTEMPTS 3          // HTTP送信リトライ回数
+#define RETRY_DELAY 1000          // リトライ間隔（ms）
+
+// Debug Settings
+#define DEBUG_SERIAL_SPEED 115200
+#define DEBUG_ENABLED true
+
+#endif // CONFIG_H 
