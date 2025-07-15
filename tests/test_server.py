@@ -17,7 +17,6 @@ TEST_IMAGE_PATH = "/home/argo/projects/WhatAreYouDouing/image.png"
 def create_test_image():
     """Check if test image exists"""
     if os.path.exists(TEST_IMAGE_PATH):
-        print(f"Using existing test image: {TEST_IMAGE_PATH}")
         return True
     else:
         print(f"Test image not found at: {TEST_IMAGE_PATH}")
@@ -25,11 +24,8 @@ def create_test_image():
 
 def test_health_check():
     """Test the health check endpoint"""
-    print("\n=== Testing Health Check ===")
     try:
         response = requests.get(f"{SERVER_URL}/api/health")
-        print(f"Status Code: {response.status_code}")
-        print(f"Response: {response.json()}")
         return response.status_code == 200
     except Exception as e:
         print(f"Health check failed: {e}")
@@ -37,7 +33,6 @@ def test_health_check():
 
 def test_create_event():
     """Test creating an event with mock data"""
-    print("\n=== Testing Event Creation ===")
     
     # Prepare mock sensor data
     sensor_data = {
@@ -58,15 +53,12 @@ def test_create_event():
     
     try:
         response = requests.post(f"{SERVER_URL}/api/events", files=files, data=data)
-        print(f"Status Code: {response.status_code}")
-        print(f"Response: {response.json()}")
         
         if response.status_code == 200:
             event_data = response.json()
-            print(f"Event ID: {event_data['event_id']}")
             return event_data['event_id']
         else:
-            print("Event creation failed")
+            print(f"Event creation failed: {response.status_code}")
             return None
     except Exception as e:
         print(f"Event creation failed: {e}")
@@ -78,11 +70,8 @@ def test_create_event():
 
 def test_get_current_status():
     """Test getting current status"""
-    print("\n=== Testing Current Status ===")
     try:
         response = requests.get(f"{SERVER_URL}/api/now")
-        print(f"Status Code: {response.status_code}")
-        print(f"Response: {response.json()}")
         return response.status_code == 200
     except Exception as e:
         print(f"Get current status failed: {e}")
@@ -90,7 +79,6 @@ def test_get_current_status():
 
 def test_get_status_by_time():
     """Test getting status by specific time"""
-    print("\n=== Testing Status by Time ===")
     
     # Test with current time
     now = time.localtime()
@@ -98,8 +86,6 @@ def test_get_status_by_time():
     
     try:
         response = requests.get(f"{SERVER_URL}/api/events/by-time/{year}/{month}/{day}/{hour}/{minute}")
-        print(f"Status Code: {response.status_code}")
-        print(f"Response: {response.json()}")
         return response.status_code == 200
     except Exception as e:
         print(f"Get status by time failed: {e}")
@@ -107,11 +93,8 @@ def test_get_status_by_time():
 
 def test_get_statistics():
     """Test getting statistics"""
-    print("\n=== Testing Statistics ===")
     try:
         response = requests.get(f"{SERVER_URL}/api/stats")
-        print(f"Status Code: {response.status_code}")
-        print(f"Response: {response.json()}")
         return response.status_code == 200
     except Exception as e:
         print(f"Get statistics failed: {e}")
@@ -119,7 +102,6 @@ def test_get_statistics():
 
 def wait_for_processing(event_id, max_wait_time=30):
     """Wait for event processing to complete"""
-    print(f"\n=== Waiting for Event {event_id} Processing ===")
     
     start_time = time.time()
     while time.time() - start_time < max_wait_time:
@@ -128,10 +110,7 @@ def wait_for_processing(event_id, max_wait_time=30):
             if response.status_code == 200:
                 data = response.json()
                 if data.get('confidence') == 'completed':
-                    print(f"Event processed successfully: {data.get('status')}")
                     return True
-                else:
-                    print(f"Processing status: {data.get('confidence')}")
             
             time.sleep(2)
         except Exception as e:
@@ -143,7 +122,7 @@ def wait_for_processing(event_id, max_wait_time=30):
 
 def cleanup():
     """Clean up test files"""
-    print("No cleanup needed - using existing test image")
+    pass
 
 def main():
     """Run all tests"""
@@ -152,7 +131,6 @@ def main():
     
     # Check test image
     if not create_test_image():
-        print("Test image not found, exiting...")
         return False
     
     # Run tests
@@ -173,7 +151,6 @@ def main():
             results.append((test_name, False))
     
     # Test event creation (requires functioning AI)
-    print("\n=== Testing Event Creation (May require AI API) ===")
     event_id = test_create_event()
     
     if event_id:
@@ -184,8 +161,7 @@ def main():
         results.append(("Event Creation", False))
     
     # Print results
-    print("\n" + "=" * 40)
-    print("TEST RESULTS")
+    print("\nTEST RESULTS")
     print("=" * 40)
     
     passed = 0
