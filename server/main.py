@@ -18,10 +18,8 @@ from database import get_db, init_db, EventCRUD, IMAGES_DIR
 from models import SensorData, EventResponse, StatusResponse, EventDetail, ActionCategory, AIProcessStatus
 from ai_analyzer import analyzer
 
-# 環境変数の読み込み
 load_dotenv()
 
-# ログの設定
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -31,27 +29,22 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """アプリケーションのライフサイクル管理"""
-    # スタートアップ処理
     try:
         init_db()
         logger.info("Application started successfully")
         logger.info("Production mode - waiting for ESP32 data")
-            
     except Exception as e:
         logger.error(f"Failed to initialize application: {e}")
         raise
     
-    yield  # アプリケーション実行中
+    yield
     
-    # シャットダウン処理
     try:
         logger.info("Application shutdown completed")
     except Exception as e:
         logger.error(f"Error during application shutdown: {e}")
 
 
-# FastAPIアプリケーションの初期化
 app = FastAPI(
     title="WhatAreYouDoing API",
     description="行動判定特化システムのAPIサーバー",
@@ -69,37 +62,22 @@ async def process_ai_analysis(
     humidity: float,
     illuminance: float
 ):
-    """
-    AI分析をバックグラウンドで実行
-    
-    Args:
-        event_id: イベントID
-        image_path: 画像パス
-        temperature: 温度
-        humidity: 湿度
-        illuminance: 照度
-    """
     try:
         logger.info(f"Starting AI analysis for event {event_id}")
         
-        # データベースセッションを取得
         db = next(get_db())
         
         try:
-            # イベントのステータスを「処理中」に変更
             EventCRUD.update_event_status(db, event_id, ActionCategory.OTHER, AIProcessStatus.PROCESSING)
             
-            # AI分析を実行
             result = analyzer.analyze_image(image_path, temperature, humidity, illuminance)
             
             if result["process_status"] == AIProcessStatus.COMPLETED:
-                # 分析完了：結果をDBに保存
                 EventCRUD.update_event_status(
                     db, event_id, result["status"], AIProcessStatus.COMPLETED
                 )
                 logger.info(f"AI analysis completed for event {event_id}: {result['status']}")
             else:
-                # 分析エラー：エラー状態に設定
                 EventCRUD.set_event_error(db, event_id, result.get("error", "Unknown error"))
                 logger.error(f"AI analysis failed for event {event_id}: {result.get('error')}")
                 
@@ -120,38 +98,22 @@ async def create_event(
     image: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
-    """
-    ESP32からのイベントデータを受信
-    
-    Args:
-        background_tasks: バックグラウンドタスク
-        metadata: センサーデータ（JSON形式）
-        image: アップロード画像
-        db: データベースセッション
-        
-    Returns:
-        イベント作成レスポンス
-    """
     try:
-        # メタデータをJSONとして解析
         try:
             sensor_data = json.loads(metadata)
         except json.JSONDecodeError:
             logger.error(f"Invalid JSON metadata: {metadata}")
             raise HTTPException(status_code=400, detail="Invalid metadata format")
         
-        # センサーデータの検証
         try:
             validated_data = SensorData(**sensor_data)
         except Exception as e:
             logger.error(f"Invalid sensor data: {e}")
             raise HTTPException(status_code=400, detail="Invalid sensor data")
         
-        # 画像ファイルの検証
         if not image.content_type or not image.content_type.startswith("image/"):
             raise HTTPException(status_code=400, detail="Invalid image format")
         
-        # 画像を保存
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         image_filename = f"{timestamp}.jpg"
         image_path = os.path.join(IMAGES_DIR, image_filename)
@@ -165,7 +127,6 @@ async def create_event(
             logger.error(f"Failed to save image: {e}")
             raise HTTPException(status_code=500, detail="Failed to save image")
         
-        # データベースにイベントを保存
         try:
             event = EventCRUD.create_event(
                 db,
@@ -176,12 +137,10 @@ async def create_event(
             )
         except Exception as e:
             logger.error(f"Failed to create event: {e}")
-            # 保存された画像を削除
             if os.path.exists(image_path):
                 os.remove(image_path)
             raise HTTPException(status_code=500, detail="Failed to create event")
         
-        # バックグラウンドでAI分析を開始
         background_tasks.add_task(
             process_ai_analysis,
             event.id,
@@ -208,15 +167,6 @@ async def create_event(
 
 @app.get("/api/now", response_model=StatusResponse)
 async def get_current_status(db: Session = Depends(get_db)):
-    """
-    最新の分類済み行動ステータスを取得
-    
-    Args:
-        db: データベースセッション
-        
-    Returns:
-        最新のステータス情報
-    """
     try:
         event = EventCRUD.get_latest_completed_event(db)
         
@@ -250,22 +200,7 @@ async def get_status_by_time(
     minute: int,
     db: Session = Depends(get_db)
 ):
-    """
-    指定した日時に最も近い時間の行動ステータスを取得
-    
-    Args:
-        year: 年
-        month: 月
-        day: 日
-        hour: 時
-        minute: 分
-        db: データベースセッション
-        
-    Returns:
-        指定時刻に最も近いステータス情報
-    """
     try:
-        # 日時の妥当性チェック
         try:
             target_time = datetime(year, month, day, hour, minute)
         except ValueError:
@@ -298,12 +233,6 @@ async def get_status_by_time(
 
 @app.get("/api/health")
 async def health_check():
-    """
-    ヘルスチェック用エンドポイント
-    
-    Returns:
-        サーバーの状態情報
-    """
     try:
         model_info = analyzer.get_model_info()
         
@@ -328,15 +257,6 @@ async def health_check():
 
 @app.get("/api/stats")
 async def get_statistics(db: Session = Depends(get_db)):
-    """
-    統計情報を取得
-    
-    Args:
-        db: データベースセッション
-        
-    Returns:
-        統計情報
-    """
     try:
         pending_events = EventCRUD.get_pending_events(db)
         latest_event = EventCRUD.get_latest_completed_event(db)
@@ -356,7 +276,6 @@ async def get_statistics(db: Session = Depends(get_db)):
 if __name__ == "__main__":
     import uvicorn
     
-    # 環境変数から設定を取得
     HOST = os.getenv("SERVER_HOST", "0.0.0.0")
     PORT = int(os.getenv("SERVER_PORT", "8000"))
     

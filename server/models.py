@@ -8,21 +8,18 @@ from datetime import datetime
 
 
 class SensorData(BaseModel):
-    """センサーデータのモデル"""
     temperature: float = Field(..., description="温度 (°C)")
     humidity: float = Field(..., description="湿度 (%)")
     illuminance: float = Field(..., description="照度 (lux)")
 
 
 class EventResponse(BaseModel):
-    """イベント作成レスポンス"""
     message: str
     event_id: int
     timestamp: datetime
 
 
 class StatusResponse(BaseModel):
-    """ステータスレスポンス"""
     status: Optional[str] = Field(None, description="行動カテゴリー")
     timestamp: datetime
     temperature: Optional[float] = None
@@ -32,7 +29,6 @@ class StatusResponse(BaseModel):
 
 
 class EventDetail(BaseModel):
-    """イベント詳細情報"""
     id: int
     timestamp: datetime
     status_category: Optional[str] = None
@@ -43,9 +39,7 @@ class EventDetail(BaseModel):
     image_path: Optional[str] = None
 
 
-# 行動カテゴリーの定義
 class ActionCategory:
-    """行動カテゴリーの定数定義"""
     PC_WORK = "PC_WORK"
     GAMING = "GAMING"
     SLEEPING = "SLEEPING"
@@ -55,13 +49,10 @@ class ActionCategory:
 
     @classmethod
     def get_all_categories(cls) -> list[str]:
-        """すべてのカテゴリーを取得"""
         return [cls.PC_WORK, cls.GAMING, cls.SLEEPING, cls.AWAKE_IN_BED, cls.AWAY, cls.OTHER]
 
 
-# AI処理状況の定義
 class AIProcessStatus:
-    """AI処理状況の定数定義"""
     PENDING = "pending"
     PROCESSING = "processing"
     COMPLETED = "completed"

@@ -11,28 +11,23 @@ from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.sql import func
 import logging
 
-# 環境変数から設定を取得
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/whatareyoudoing.db")
 DATA_DIR = os.getenv("DATA_DIR", "./data")
 IMAGES_DIR = os.getenv("IMAGES_DIR", "./data/images")
 
-# データディレクトリの作成
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(IMAGES_DIR, exist_ok=True)
 
-# データベースエンジンの設定
 engine = create_engine(DATABASE_URL, echo=False)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
-# ログの設定
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
 class Event(Base):
-    """イベントテーブル"""
     __tablename__ = "events"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -46,7 +41,6 @@ class Event(Base):
 
 
 def get_db():
-    """データベースセッションの取得"""
     db = SessionLocal()
     try:
         yield db
@@ -55,7 +49,6 @@ def get_db():
 
 
 def init_db():
-    """データベースの初期化"""
     try:
         Base.metadata.create_all(bind=engine)
         logger.info("Database initialized successfully")
@@ -65,7 +58,6 @@ def init_db():
 
 
 class EventCRUD:
-    """イベントのCRUD操作"""
     
     @staticmethod
     def create_event(
@@ -75,7 +67,6 @@ class EventCRUD:
         humidity: Optional[float] = None,
         illuminance: Optional[float] = None
     ) -> Event:
-        """新しいイベントを作成"""
         try:
             event = Event(
                 image_path=image_path,
@@ -101,7 +92,6 @@ class EventCRUD:
         status_category: str,
         ai_process_status: str = "completed"
     ) -> Optional[Event]:
-        """イベントのステータスを更新"""
         try:
             event = db.query(Event).filter(Event.id == event_id).first()
             if event:
@@ -121,7 +111,6 @@ class EventCRUD:
 
     @staticmethod
     def get_latest_completed_event(db: Session) -> Optional[Event]:
-        """最新の完了したイベントを取得"""
         try:
             event = db.query(Event).filter(
                 Event.ai_process_status == "completed"
@@ -140,11 +129,9 @@ class EventCRUD:
         hour: int,
         minute: int
     ) -> Optional[Event]:
-        """指定した時間に最も近いイベントを取得"""
         try:
             target_time = datetime(year, month, day, hour, minute)
             
-            # 指定時刻に最も近いイベントを取得
             event = db.query(Event).filter(
                 Event.ai_process_status == "completed"
             ).order_by(
@@ -158,7 +145,6 @@ class EventCRUD:
 
     @staticmethod
     def get_pending_events(db: Session, limit: int = 10) -> List[Event]:
-        """未処理のイベントを取得"""
         try:
             events = db.query(Event).filter(
                 Event.ai_process_status == "pending"
@@ -170,7 +156,6 @@ class EventCRUD:
 
     @staticmethod
     def delete_old_events(db: Session, days_to_keep: int = 90) -> int:
-        """古いイベントを削除"""
         try:
             cutoff_date = datetime.utcnow() - timedelta(days=days_to_keep)
             deleted_count = db.query(Event).filter(
@@ -186,7 +171,6 @@ class EventCRUD:
 
     @staticmethod
     def set_event_error(db: Session, event_id: int, error_message: str = "AI processing error") -> Optional[Event]:
-        """イベントをエラー状態に設定"""
         try:
             event = db.query(Event).filter(Event.id == event_id).first()
             if event:
