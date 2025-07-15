@@ -5,7 +5,7 @@
 ![ESP32](https://img.shields.io/badge/ESP32-CAM-red.svg)
 ![AI](https://img.shields.io/badge/AI-Gemini-orange.svg)
 
-**WhatAreYouDoing?** は、ESP32-CAMとセンサーを使って部屋の状況をリアルタイムで監視し、Google Gemini AIが行動を自動分類するスマートホームシステムです。
+**WhatAreYouDoing?** は,ESP32-CAMとセンサーを使って部屋の状況をリアルタイムで監視し,Google Gemini AIが行動を自動分類するスマートホームシステムです.
 
 ## 主な機能
 
@@ -69,7 +69,7 @@ cd server
 uv run python main.py
 ```
 
-サーバーが起動したら、ブラウザで `http://localhost:8000/docs` にアクセスしてAPI文書を確認できます。
+サーバーが起動したら,ブラウザで `http://localhost:8000/docs` にアクセスしてAPI文書を確認できます.
 
 ### 3. ESP32-CAM セットアップ
 
@@ -86,7 +86,7 @@ cp config.h.example config.h
 #define SERVER_URL "http://192.168.1.100:8000/api/events"
 ```
 
-Arduino IDEでファームウェアをESP32-CAMにアップロードします。
+Arduino IDEでファームウェアをESP32-CAMにアップロードします.
 
 ## 📡 API使用方法
 
@@ -147,18 +147,18 @@ curl http://localhost:8000/api/health
 
 | カテゴリー | 説明 | 判定条件 |
 |------------|------|----------|
-| `PC_WORK` | PC作業中 | デスクに座り、エアコン上にコントローラーあり |
-| `GAMING` | ゲーム中 | デスクに座り、エアコン上にコントローラーなし |
+| `PC_WORK` | PC作業中 | デスクに座り,エアコン上にコントローラーあり |
+| `GAMING` | ゲーム中 | デスクに座り,エアコン上にコントローラーなし |
 | `SLEEPING` | 睡眠中 | ベッドに横になっている |
-| `USING_SMARTPHONE` | スマホ操作中 | ベッドに座っている、またはPC以外での活動 |
+| `USING_SMARTPHONE` | スマホ操作中 | ベッドに座っている,またはPC以外での活動 |
 | `AWAY` | 不在 | 部屋に人が映っていない |
-| `OTHER` | その他 | 上記に該当しない、または判定困難 |
+| `OTHER` | その他 | 上記に該当しない,または判定困難 |
 
 ## システム設定
 
 ### AI分析の重要ルール
 
-このシステムの特徴的な機能として、**ゲームコントローラーの物理的配置**を判定に使用します：
+このシステムの特徴的な機能として,**ゲームコントローラーの物理的配置**を判定に使用します：
 
 1. **不在判定最優先**: 人が映っていない場合は常に `AWAY`
 2. **PC作業 vs ゲーム判定**: 
@@ -168,7 +168,7 @@ curl http://localhost:8000/api/health
 
 ### データ管理
 
-- **自動保存**: 画像は`server/data/images/`、データベースは`server/data/whatareyoudoing.db`
+- **自動保存**: 画像は`server/data/images/`,データベースは`server/data/whatareyoudoing.db`
 - **データ保持**: 90日経過後のデータ自動削除（設定可能）
 - **画像形式**: JPEG（VGA 640x480）
 
@@ -239,7 +239,7 @@ WhatAreYouDoing/
 ```
 ## 動作例
 
-システムが正常に動作している場合、以下のような情報を取得できます：
+システムが正常に動作している場合,以下のような情報を取得できます：
 
 ```bash
 # 現在の状態確認

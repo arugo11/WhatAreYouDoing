@@ -1,6 +1,5 @@
 """
-AI Analysis Module for WhatAreYouDoing
-Uses Google Gemini API to classify user actions
+AIからのレスポンス処理
 """
 
 import os
@@ -16,10 +15,10 @@ from dotenv import load_dotenv
 
 from models import ActionCategory, AIProcessStatus
 
-# Load environment variables from .env file
+# load enviroment val
 load_dotenv()
 
-# ログの設定
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -36,56 +35,47 @@ class AIAnalyzer:
     """AI分析クラス"""
     
     def __init__(self, model_name: str = "gemini-1.5-flash-latest"):
-        """
-        初期化
-        
-        Args:
-            model_name: 使用するGeminiモデル名
-        """
+
         self.model_name = model_name
         self.model = genai.GenerativeModel(model_name)
         logger.info(f"AI Analyzer initialized with model: {model_name}")
     
-    def _generate_prompt(self, temperature: float, humidity: float, illuminance: float) -> str:
-        """
-        プロンプトを生成
-        
-        Args:
-            temperature: 温度
-            humidity: 湿度
-            illuminance: 照度
-            
-        Returns:
-            分析用プロンプト
-        """
-        prompt = f"""あなたは私の部屋の状況を分析し、行動を分類する専門家です。提供された画像とセンサーデータに基づき、私の現在の状態を6つの定義済みカテゴリーの中から最も確からしいもの1つに分類してください。
+    def _generate_prompt(
+        self,
+        temperature: float, # 温度
+        humidity: float,    # 湿度
+        illuminance: float  # 照度
+       ) -> str:
+
+        prompt = f"""あなたは私の部屋の状況を分析し,行動を分類する専門家です.提供された画像とセンサーデータに基づき,私の現在の状態を6つの定義済みカテゴリーの中から最も確からしいもの1つに分類してください.
 
 # カテゴリー定義
-- PC_WORK: デスクのPCに向かって作業している。
-- GAMING: デスクのPCに向かってゲームをしている。
-- SLEEPING: ベッドで寝ている。
-- USING_SMARTPHONE: ベッドや椅子でスマートフォンを操作している。
-- AWAY: 部屋に誰もいない。
-- OTHER: 上記のいずれにも当てはまらない、または判断が困難な場合。
+- PC_WORK: デスクのPCに向かって作業している.
+- GAMING: デスクのPCに向かってゲームをしている.
+- SLEEPING: ベッドで寝ている.
+- USING_SMARTPHONE: ベッドや椅子でスマートフォンを操作している.
+- AWAY: 部屋に誰もいない.
+- OTHER: 上記のいずれにも当てはまらない,または判断が困難な場合.
 
 # 行動分類のための重要ルール
-これは私の私室です。以下のルールに従って、より正確な判断を行ってください。
+これは私の私室です.以下のルールに従って,より正確な判断を行ってください.
 
 1. **最優先判断：不在(AWAY)かどうか**
-   - 画像に人物が明確に映っていない場合、状態は「AWAY」です。他のルールは無視してください。
+   - 画像に人物が明確に映っていない場合,状態は「AWAY」です.他のルールは無視してください.
 
 2. **PC作業(PC_WORK)とゲーム(GAMING)の判断**
-   - 私がデスクの椅子に座っている場合、**エアコンの上**を確認してください。
-   - **エアコンの上にゲームコントローラーがはっきりと見える場合**、私の状態は「**PC_WORK**」です。
-   - **エアコンの上にゲームコントローラーが見えない場合**、私の状態は「**GAMING**」です。
+   - 私がデスクの椅子に座っている場合,**エアコンの上**を確認してください.
+   - **エアコンの上にゲームコントローラーがはっきりと見える場合**,私の状態は「**PC_WORK**」です.
+   - **エアコンの上にゲームコントローラーが見えない場合**,私の状態は「**GAMING**」です.
 
 3. **睡眠(SLEEPING)の判断**
-   - 私がベッドの中に横になっている場合、状態は「SLEEPING」です。
-   - 特に部屋が暗い（照度データが低い）場合は、この可能性が極めて高いです。
+   - 私がベッドの中に横になっている場合,状態は「SLEEPING」です.
+   - 特に部屋が暗い（照度データが低い）場合は,この可能性が極めて高いです.
+   - 明るい場合も寝ている可能性があるので次のスマホ操作を確認してください
 
 4. **スマホ操作(USING_SMARTPHONE)の判断**
-   - 私がベッドの上で、横にならずに体を起こしている場合、状態は「USING_SMARTPHONE」です。
-   - PCの前に座っていない場合もこの可能性を考慮してください。
+   - 私がベッドの上で横になってなにかを操作している場合はUSING_SMARTPHONEです.
+   - PCの前に座っていない場合もこの可能性を考慮してください.
 
 # 提供データ
 - センサー情報:
@@ -94,7 +84,7 @@ class AIAnalyzer:
   - 照度: {illuminance} lux
 
 # 出力形式
-あなたの回答は、必ず以下のJSON形式のみで出力してください。他の説明文は一切含めないでください。
+あなたの回答は,必ず以下のJSON形式のみで出力してください.他の説明文は一切含めないでください.
 {{"status": "ここに判断したカテゴリー名"}}"""
         
         return prompt

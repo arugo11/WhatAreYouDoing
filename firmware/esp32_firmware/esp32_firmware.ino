@@ -1,10 +1,3 @@
-/*
- * WhatAreYouDoing ESP32-CAM Firmware
- * 
- * This firmware captures images and sensor data when motion is detected,
- * then sends the data to the API server for analysis.
- */
-
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>

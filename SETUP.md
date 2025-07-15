@@ -2,7 +2,7 @@
 
 ## 概要
 
-このドキュメントは、WhatAreYouDoingプロジェクトの完全なセットアップ手順を説明します。
+このドキュメントは,WhatAreYouDoingプロジェクトの完全なセットアップ手順を説明します.
 
 ## システム要件
 
@@ -39,7 +39,7 @@ cp env.example .env
 
 ### 1.2 環境変数の設定
 
-`.env`ファイルを編集して、以下の設定を行います：
+`.env`ファイルを編集して,以下の設定を行います：
 
 ```bash
 # Gemini API Settings
@@ -86,7 +86,7 @@ uv run python main.py
 
 ### 1.5 動作確認
 
-ブラウザで`http://localhost:8000/docs`にアクセスし、API文書が表示されることを確認します。
+ブラウザで`http://localhost:8000/docs`にアクセスし,API文書が表示されることを確認します.
 
 ## 2. ESP32-CAM ファームウェアのセットアップ
 
@@ -117,7 +117,7 @@ cd firmware/esp32_firmware
 cp config.h.example config.h
 ```
 
-`config.h`ファイルを編集して、以下の設定を行います：
+`config.h`ファイルを編集して,以下の設定を行います：
 
 ```cpp
 // Wi-Fi Settings
@@ -206,7 +206,7 @@ tail -f server/logs/app.log
 # データベースの場所
 ls -la server/data/
 
-# 古いデータの削除（自動実行されるが、手動でも可能）
+# 古いデータの削除（自動実行されるが,手動でも可能）
 # 実装により異なる
 ```
 
@@ -307,7 +307,7 @@ if __name__ == "__main__":
 #define DEVICE_ID "camera_01"
 ```
 
-これにより、複数のカメラからのデータを区別できます。
+これにより,複数のカメラからのデータを区別できます.
 
 ## 8. 参考資料
 
