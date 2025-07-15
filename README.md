@@ -138,7 +138,7 @@ curl http://localhost:8000/api/health
   "api_configured": true,
   "supported_categories": [
     "PC_WORK", "GAMING", "SLEEPING", 
-    "USING_SMARTPHONE", "AWAY", "OTHER"
+    "AWAKE_IN_BED", "AWAY", "OTHER"
   ]
 }
 ```
@@ -150,7 +150,7 @@ curl http://localhost:8000/api/health
 | `PC_WORK` | PC作業中 | デスクに座り,エアコン上にコントローラーあり |
 | `GAMING` | ゲーム中 | デスクに座り,エアコン上にコントローラーなし |
 | `SLEEPING` | 睡眠中 | ベッドに横になっている |
-| `USING_SMARTPHONE` | スマホ操作中 | ベッドに座っている,またはPC以外での活動 |
+| `AWAKE_IN_BED` | ベッドで起きている | ベッドに横になっているが起きている状態 |
 | `AWAY` | 不在 | 部屋に人が映っていない |
 | `OTHER` | その他 | 上記に該当しない,または判定困難 |
 

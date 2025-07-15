@@ -49,14 +49,14 @@ class ActionCategory:
     PC_WORK = "PC_WORK"
     GAMING = "GAMING"
     SLEEPING = "SLEEPING"
-    USING_SMARTPHONE = "USING_SMARTPHONE"
+    AWAKE_IN_BED = "AWAKE_IN_BED"
     AWAY = "AWAY"
     OTHER = "OTHER"
 
     @classmethod
     def get_all_categories(cls) -> list[str]:
         """すべてのカテゴリーを取得"""
-        return [cls.PC_WORK, cls.GAMING, cls.SLEEPING, cls.USING_SMARTPHONE, cls.AWAY, cls.OTHER]
+        return [cls.PC_WORK, cls.GAMING, cls.SLEEPING, cls.AWAKE_IN_BED, cls.AWAY, cls.OTHER]
 
 
 # AI処理状況の定義
