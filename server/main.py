@@ -1,5 +1,5 @@
 """
-FastAPI server for WhatAreYouDoing project
+WhatAreYouDoingプロジェクトのFastAPIサーバー
 """
 
 import os

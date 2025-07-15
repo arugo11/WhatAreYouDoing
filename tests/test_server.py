@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script for WhatAreYouDoing API server
+API鯖のテストコード
 """
 
 import requests
@@ -10,12 +10,12 @@ import os
 from PIL import Image
 from io import BytesIO
 
-# Test configuration
+# テスト設定
 SERVER_URL = "http://localhost:8000"
 TEST_IMAGE_PATH = "/home/argo/projects/WhatAreYouDouing/image.png"
 
 def create_test_image():
-    """Check if test image exists"""
+    """テスト用画像があるかチェック"""
     if os.path.exists(TEST_IMAGE_PATH):
         return True
     else:
@@ -23,7 +23,7 @@ def create_test_image():
         return False
 
 def test_health_check():
-    """Test the health check endpoint"""
+    """ヘルスチェックのエンドポイントテスト"""
     try:
         response = requests.get(f"{SERVER_URL}/api/health")
         return response.status_code == 200
@@ -32,21 +32,21 @@ def test_health_check():
         return False
 
 def test_create_event():
-    """Test creating an event with mock data"""
+    """モックデータでイベント作成をテストする"""
     
-    # Prepare mock sensor data
+    
     sensor_data = {
         "temperature": 25.5,
         "humidity": 60.2,
         "illuminance": 350.0
     }
     
-    # Prepare files for multipart upload
+    
     files = {
         'image': ('image.png', open(TEST_IMAGE_PATH, 'rb'), 'image/png')
     }
     
-    # Prepare form data
+    
     data = {
         'metadata': json.dumps(sensor_data)
     }
@@ -64,12 +64,12 @@ def test_create_event():
         print(f"Event creation failed: {e}")
         return None
     finally:
-        # Close the file
+        
         if 'image' in files:
             files['image'][1].close()
 
 def test_get_current_status():
-    """Test getting current status"""
+    """現在のステータス取得テスト"""
     try:
         response = requests.get(f"{SERVER_URL}/api/now")
         return response.status_code == 200
@@ -78,9 +78,9 @@ def test_get_current_status():
         return False
 
 def test_get_status_by_time():
-    """Test getting status by specific time"""
+    """指定時刻のステータス取得テスト"""
     
-    # Test with current time
+    # 現在時刻でテスト
     now = time.localtime()
     year, month, day, hour, minute = now.tm_year, now.tm_mon, now.tm_mday, now.tm_hour, now.tm_min
     
@@ -92,7 +92,7 @@ def test_get_status_by_time():
         return False
 
 def test_get_statistics():
-    """Test getting statistics"""
+    """統計情報取得テスト"""
     try:
         response = requests.get(f"{SERVER_URL}/api/stats")
         return response.status_code == 200
@@ -101,7 +101,7 @@ def test_get_statistics():
         return False
 
 def wait_for_processing(event_id, max_wait_time=30):
-    """Wait for event processing to complete"""
+    """イベント処理完了まで待機"""
     
     start_time = time.time()
     while time.time() - start_time < max_wait_time:
@@ -121,19 +121,19 @@ def wait_for_processing(event_id, max_wait_time=30):
     return False
 
 def cleanup():
-    """Clean up test files"""
+    """テストファイルのおかたづけ♡"""
     pass
 
 def main():
-    """Run all tests"""
+    """全テスト実行"""
     print("WhatAreYouDoing API Server Test Suite")
     print("=" * 40)
     
-    # Check test image
+    # テスト用画像をチェック
     if not create_test_image():
         return False
     
-    # Run tests
+    # 実行
     tests = [
         ("Health Check", test_health_check),
         ("Current Status", test_get_current_status),
@@ -150,17 +150,17 @@ def main():
             print(f"Test '{test_name}' failed with exception: {e}")
             results.append((test_name, False))
     
-    # Test event creation (requires functioning AI)
+    # イベント作成テスト（AI機能が必要）
     event_id = test_create_event()
     
     if event_id:
-        # Wait for processing
+        # 処理完了まで待機
         processing_success = wait_for_processing(event_id)
         results.append(("Event Creation & Processing", processing_success))
     else:
         results.append(("Event Creation", False))
     
-    # Print results
+    # 結果
     print("\nTEST RESULTS")
     print("=" * 40)
     
@@ -175,7 +175,7 @@ def main():
     
     print(f"\nTotal: {passed}/{total} tests passed")
     
-    # Cleanup
+    # 後片付け
     cleanup()
     
     return passed == total

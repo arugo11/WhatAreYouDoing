@@ -1,5 +1,5 @@
 """
-Database models and CRUD operations
+データベースモデルとCRUD操作
 """
 
 import os

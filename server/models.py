@@ -1,5 +1,5 @@
 """
-Pydantic models for the WhatAreYouDoing API
+モデル群
 """
 
 from pydantic import BaseModel, Field

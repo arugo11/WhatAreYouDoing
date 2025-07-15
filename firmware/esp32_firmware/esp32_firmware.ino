@@ -5,15 +5,14 @@
 #include "esp_camera.h"
 #include "config.h"
 
-// Global variables
 bool pirDetected = false;
 unsigned long lastDetectionTime = 0;
 bool wifiConnected = false;
 
-// Camera configuration
+// カメラの設定
 camera_config_t config;
 
-// Function prototypes
+// プロトタイプ宣言
 void setupCamera();
 void setupWiFi();
 void setupSensors();
@@ -29,7 +28,7 @@ void setup() {
   Serial.begin(DEBUG_SERIAL_SPEED);
   debugPrint("Starting WhatAreYouDoing ESP32-CAM...");
   
-  // Initialize components
+  // コンポーネント初期化
   setupCamera();
   setupWiFi();
   setupSensors();
@@ -39,7 +38,7 @@ void setup() {
 }
 
 void loop() {
-  // Check if PIR detected motion and cooldown period has passed
+  // 人感センサが動きを感知してクールダウン時間が過ぎたかチェック
   if (pirDetected && (millis() - lastDetectionTime > DETECTION_COOLDOWN)) {
     pirDetected = false;
     
@@ -54,19 +53,19 @@ void loop() {
     lastDetectionTime = millis();
   }
   
-  // Check WiFi connection
+  // WiFi接続の確認
   if (WiFi.status() != WL_CONNECTED) {
     debugPrint("WiFi disconnected. Reconnecting...");
     setupWiFi();
   }
   
-  delay(100);  // Small delay to prevent busy loop
+  delay(100);  // 無限ループ対策
 }
 
 void setupCamera() {
   debugPrint("Initializing camera...");
   
-  // Camera pin configuration for M5Stack Unit CAM
+  // unit cam用のカメラピン設定
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
   config.pin_d0 = 32;
@@ -91,7 +90,7 @@ void setupCamera() {
   config.jpeg_quality = CAMERA_JPEG_QUALITY;
   config.fb_count = 1;
   
-  // Initialize camera
+  // カメラを初期化
   esp_err_t err = esp_camera_init(&config);
   if (err != ESP_OK) {
     debugPrint("Camera init failed with error 0x" + String(err, HEX));
@@ -126,10 +125,10 @@ void setupWiFi() {
 void setupSensors() {
   debugPrint("Initializing I2C sensors...");
   
-  // Initialize I2C
+  // I2C通信の初期化
   Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
   
-  // Test sensor communication
+  // センサーとの通信テスト
   Wire.beginTransmission(SHT40_I2C_ADDRESS);
   if (Wire.endTransmission() == 0) {
     debugPrint("SHT40 sensor detected");
@@ -140,12 +139,12 @@ void setupSensors() {
   Wire.beginTransmission(BH1750_I2C_ADDRESS);
   if (Wire.endTransmission() == 0) {
     debugPrint("BH1750 sensor detected");
-    // Initialize BH1750
+    // 照度センサーを初期化
     Wire.beginTransmission(BH1750_I2C_ADDRESS);
-    Wire.write(0x01);  // Power on
+    Wire.write(0x01);  // 電源をオン
     Wire.endTransmission();
     Wire.beginTransmission(BH1750_I2C_ADDRESS);
-    Wire.write(0x10);  // Continuous H-resolution mode
+    Wire.write(0x10);  // 連続高解像度モード
     Wire.endTransmission();
   } else {
     debugPrint("BH1750 sensor not found");
@@ -171,19 +170,19 @@ bool captureAndSend() {
     return false;
   }
   
-  // Capture image
+  // 画像を取得
   camera_fb_t * fb = esp_camera_fb_get();
   if (!fb) {
     debugPrint("Camera capture failed");
     return false;
   }
   
-  // Read sensor data
+  // センサーデータを取得
   float temperature = readTemperature();
   float humidity = readHumidity();
   float illuminance = readIlluminance();
   
-  // Create JSON metadata
+  // JSONに整形
   StaticJsonDocument<200> jsonDoc;
   jsonDoc["temperature"] = temperature;
   jsonDoc["humidity"] = humidity;
@@ -192,18 +191,17 @@ bool captureAndSend() {
   String jsonString;
   serializeJson(jsonDoc, jsonString);
   
-  // Send HTTP request with retry logic
-  bool success = false;
+  // HTTPリクエストを送信
+  bool success = false; // 成功フラグ
   for (int attempt = 0; attempt < RETRY_ATTEMPTS && !success; attempt++) {
     HTTPClient http;
     http.begin(SERVER_URL);
     http.setTimeout(SERVER_TIMEOUT);
     
-    // Create multipart form data
+
     String boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW";
     String contentType = "multipart/form-data; boundary=" + boundary;
-    
-    // Build the multipart body
+
     String body = "--" + boundary + "\r\n";
     body += "Content-Disposition: form-data; name=\"metadata\"\r\n\r\n";
     body += jsonString + "\r\n";
@@ -213,17 +211,17 @@ bool captureAndSend() {
     
     String footer = "\r\n--" + boundary + "--\r\n";
     
-    // Calculate content length
+    // コンテンツ長の算出
     int contentLength = body.length() + fb->len + footer.length();
     
-    // Set headers
+    // ヘッダーの設定
     http.addHeader("Content-Type", contentType);
     http.addHeader("Content-Length", String(contentLength));
     
-    // Begin POST request
+    // POSTリクエスト
     int httpResponseCode = http.POST("");
     
-    // Send the multipart data
+    // マルチパートデータ送信
     WiFiClient* client = http.getStreamPtr();
     client->print(body);
     client->write(fb->buf, fb->len);
@@ -243,19 +241,19 @@ bool captureAndSend() {
     http.end();
   }
   
-  // Release frame buffer
+  // フレームバッファ
   esp_camera_fb_return(fb);
   
   return success;
 }
 
 float readTemperature() {
-  // SHT40 temperature reading
+  // SHT40温度読み取り
   Wire.beginTransmission(SHT40_I2C_ADDRESS);
-  Wire.write(0xFD);  // High precision measurement command
+  Wire.write(0xFD);
   Wire.endTransmission();
   
-  delay(10);  // Wait for measurement
+  delay(10);  // wait
   
   Wire.requestFrom(SHT40_I2C_ADDRESS, 6);
   
@@ -265,21 +263,21 @@ float readTemperature() {
     uint16_t hum_raw = (Wire.read() << 8) | Wire.read();
     uint8_t hum_crc = Wire.read();
     
-    // Convert to temperature (°C)
+    // セルシウス温度に変換
     float temperature = -45.0 + 175.0 * temp_raw / 65535.0;
     return temperature;
   }
   
-  return 25.0;  // Default value if sensor fails
+  return 25.0;  // センサー失敗時のダミーの値
 }
 
 float readHumidity() {
-  // SHT40 humidity reading
+  // SHT40湿度読み取り
   Wire.beginTransmission(SHT40_I2C_ADDRESS);
-  Wire.write(0xFD);  // High precision measurement command
+  Wire.write(0xFD);
   Wire.endTransmission();
   
-  delay(10);  // Wait for measurement
+  delay(10);  // wait
   
   Wire.requestFrom(SHT40_I2C_ADDRESS, 6);
   
@@ -289,25 +287,25 @@ float readHumidity() {
     uint16_t hum_raw = (Wire.read() << 8) | Wire.read();
     uint8_t hum_crc = Wire.read();
     
-    // Convert to humidity (%)
+    // 湿度に変換
     float humidity = -6.0 + 125.0 * hum_raw / 65535.0;
     return humidity;
   }
   
-  return 50.0;  // Default value if sensor fails
+  return 50.0;  // センサー失敗時のダミー値
 }
 
 float readIlluminance() {
-  // BH1750 illuminance reading
+  // BH1750照度読み取り
   Wire.requestFrom(BH1750_I2C_ADDRESS, 2);
   
   if (Wire.available() >= 2) {
     uint16_t lux_raw = (Wire.read() << 8) | Wire.read();
-    float lux = lux_raw / 1.2;  // Convert to lux
+    float lux = lux_raw / 1.2;  // luxに変換
     return lux;
   }
   
-  return 300.0;  // Default value if sensor fails
+  return 300.0;  // センサー失敗時のダミー値
 }
 
 void debugPrint(String message) {
