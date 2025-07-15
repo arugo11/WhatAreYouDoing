@@ -48,21 +48,3 @@ curl http://localhost:8000/api/health
 # 特定時刻の状態
 curl http://localhost:8000/api/events/by-time/2025/7/13/14/30
 ```
-
-## トラブルシューティング
-
-- **ESP32接続不可**: WiFi設定とサーバーIPアドレスを確認
-- **AI分析エラー**: Gemini APIキー設定とインターネット接続を確認
-- **詳細なセットアップ**: SETUP.mdを参照
-
-## プロジェクト構造
-
-```
-WhatAreYouDoing/
-├── server/           # FastAPI サーバー
-├── firmware/         # ESP32ファームウェア
-├── tests/           # テストコード
-├── README.md        # このファイル
-└── SETUP.md         # 詳細セットアップガイド
-```
-
