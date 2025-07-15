@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 from database import get_db, init_db, EventCRUD, IMAGES_DIR
 from models import SensorData, EventResponse, StatusResponse, EventDetail, ActionCategory, AIProcessStatus
 from ai_analyzer import analyzer
+import demo_mode
 
 # 環境変数の読み込み
 load_dotenv()
@@ -43,9 +44,34 @@ async def startup_event():
     try:
         init_db()
         logger.info("Application started successfully")
+        
+        # デモモードが有効な場合、自動データ収集を開始
+        demo_enabled = os.getenv("DEMO_MODE", "false").lower() == "true"
+        if demo_enabled:
+            camera_url = os.getenv("DEMO_CAMERA_URL", "http://192.168.3.3:5000/video_feed")
+            capture_interval = int(os.getenv("DEMO_CAPTURE_INTERVAL", "30"))
+            
+            logger.info("Demo mode enabled - starting auto data collection")
+            await demo_mode.start_demo_mode(camera_url, capture_interval)
+        else:
+            logger.info("Production mode - waiting for ESP32 data")
+            
     except Exception as e:
-        logger.error(f"Failed to initialize database: {e}")
+        logger.error(f"Failed to initialize application: {e}")
         raise
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """アプリケーション終了時の処理"""
+    try:
+        if demo_mode._demo_collector:
+            logger.info("Stopping demo mode...")
+            await demo_mode.stop_demo_mode()
+        
+        logger.info("Application shutdown completed")
+    except Exception as e:
+        logger.error(f"Error during application shutdown: {e}")
 
 
 async def process_ai_analysis(
@@ -292,12 +318,15 @@ async def health_check():
     """
     try:
         model_info = analyzer.get_model_info()
+        demo_status = demo_mode.get_demo_status()
+        
         return {
             "status": "healthy",
             "timestamp": datetime.utcnow().isoformat(),
             "ai_model": model_info["model_name"],
             "api_configured": model_info["api_key_configured"],
-            "supported_categories": model_info["supported_categories"]
+            "supported_categories": model_info["supported_categories"],
+            "demo_mode": demo_status
         }
     except Exception as e:
         logger.error(f"Health check failed: {e}")
