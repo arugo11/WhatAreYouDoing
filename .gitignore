@@ -33,30 +33,10 @@ ENV/
 
 # Data
 server/data/
-server/logs/
-server/database.db
 
-# ESP32 Configuration
-firmware/esp32_firmware/config.h
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
 
 # Logs
 *.log
-
-# Test files (large images)
-image.png
-test_*.png
-test_*.jpg 
 
 # Docs
 docs/
