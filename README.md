@@ -15,7 +15,7 @@ ESP32-CAMとGoogle Gemini AIを使用して部屋の状況をリアルタイム�
 - Google Gemini API キー
 - Arduino IDE（ESP32開発用）
 
-## クイックスタート
+## セットアップ
 
 ### 1. サーバーセットアップ
 
